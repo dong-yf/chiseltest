@@ -3,7 +3,7 @@
 organization := "edu.berkeley.cs"
 name := "chiseltest"
 
-version := "0.5.6"
+version := "0.5-SNAPSHOT"
 
 scalaVersion := "2.12.15"
 
