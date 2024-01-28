@@ -5,7 +5,7 @@ name := "chiseltest"
 
 version := "0.5-SNAPSHOT"
 
-scalaVersion := "2.12.15"
+scalaVersion := "2.12.17"
 
 crossScalaVersions := Seq("2.12.15", "2.13.7")
 
@@ -51,7 +51,8 @@ publishTo := {
 
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 val defaultVersions = Map(
-  "chisel3" -> "3.5.6",
+  "chisel3" -> "3.9-SNAPSHOT",
+  "firrtl" -> "1.5-SNAPSHOT",
   "treadle" -> "1.5.6"
 )
 
@@ -67,8 +68,11 @@ scalacOptions ++= Seq(
   }
 }
 
+dependencyOverrides += "edu.berkeley.cs" %% "firrtl" % "1.5-SNAPSHOT"
+
 libraryDependencies ++= Seq(
   "edu.berkeley.cs" %% "chisel3" % defaultVersions("chisel3"),
+  "edu.berkeley.cs" %% "firrtl" % defaultVersions("firrtl"),
   "edu.berkeley.cs" %% "treadle" % defaultVersions("treadle"),
   "org.scalatest" %% "scalatest" % "3.1.4",
   "com.lihaoyi" %% "utest" % "0.7.9",
