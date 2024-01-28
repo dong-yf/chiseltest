@@ -41,7 +41,7 @@ class SMTModelChecker(
     ctx.push()
 
     // declare/define functions and encode the transition system
-    val enc: TransitionSystemSmtEncoding = if (solver.supportsUninterpretedSorts) {
+    val enc: TransitionSystemSmtEncoding = if (false) {
       new CompactSmtEncoding(sys)
     } else {
       new UnrollSmtEncoding(sys)
