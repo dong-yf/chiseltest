@@ -8,13 +8,54 @@ import firrtl.backends.experimental.smt._
 
 
 class UnrollSmtEncoding(sys: TransitionSystem) extends TransitionSystemSmtEncoding {
-  private def at(sym:  SMTSymbol, step: Int): SMTSymbol = sym.rename(s"${sym.name}@$step")
-  private def at(name: String, step:    Int): String = s"$name@$step"
+  private def at(sym:  SMTSymbol, step: Int): SMTSymbol = {
+    val updatedSym = updateIndex(sym, step)
+    sym.rename(s"${updatedSym.name}@$step")
+  }
+  private def at(name: String, step:    Int): String = {
+    val updatedName = updateIndex(name, step)
+    s"$updatedName@$step"
+  }
   private var currentStep = -1
   private val isSignal = (sys.inputs.map(_.name) ++ sys.signals.map(_.name) ++ sys.states.map(_.name)).toSet
+  private val branchingVarNum = getBranchingVarNum
 
   override def defineHeader(ctx: SolverContext): Unit = {
     // nothing to do in this encoding
+  }
+
+  private def getBranchingVarNum: Int = {
+    val pattern = """.*_g#(\d+):-?(\d+)""".r
+    val maxIndex = isSignal.map {
+      case pattern(_, index) => index.toInt
+      case _ => 0
+    }.max
+    maxIndex + 1
+  }
+
+  private def updateIndex(sym: SMTSymbol, step: Int): SMTSymbol = {
+    // FIXME: '-' was discarded during the update
+    val pattern = """.*(_g#(\d+):-?(\d+))""".r
+    sym.name match {
+      case pattern(fullMatch, first, next) =>
+        val updatedFirst = (first.toInt + step*branchingVarNum).toString
+        val updatedNext = (next.toInt + step*branchingVarNum).toString
+        val updatedName = sym.name.replace(fullMatch, s"_g#$updatedFirst:$updatedNext")
+        // println(s"at $step step, updatedname: $updatedName")
+        sym.rename(updatedName)
+      case _ => sym
+    }
+  }
+
+  private def updateIndex(name: String, step: Int): String = {
+    val pattern = """.*(_g#(\d+):-?(\d+))""".r
+    name match {
+      case pattern(fullMatch, first, next) =>
+        val updatedFirst = (first.toInt + step*branchingVarNum).toString
+        val updatedNext = (next.toInt + step*branchingVarNum).toString
+        name.replace(fullMatch, s"_g#$updatedFirst:$updatedNext")
+      case _ => name
+    }
   }
 
   override def init(ctx: SolverContext): Unit = {
