@@ -88,21 +88,24 @@ class SMTModelChecker(
           ctx.pop()
         }
       } else {
-        val anyBad = BVNot(BVAnd(assertions.map(enc.getAssertion)))
-        ctx.push()
-        ctx.assert(anyBad)
-        val res = ctx.check(produceModel = false)
+        // println(s"k=$k, kMax=$kMax")
+        // if (k == kMax) {
+          val anyBad = BVNot(BVAnd(assertions.map(enc.getAssertion)))
+          ctx.push()
+          ctx.assert(anyBad)
+          val res = ctx.check(produceModel = false)
 
-        // did we find an assignment for which at least one bad state is true?
-        if (res.isSat) {
-          val w = getWitness(ctx, sys, enc, k)
+          // did we find an assignment for which at least one bad state is true?
+          if (res.isSat) {
+            val w = getWitness(ctx, sys, enc, k)
+            ctx.pop()
+            ctx.pop()
+            assert(ctx.stackDepth == 0, s"Expected solver stack to be empty, not: ${ctx.stackDepth}")
+            ctx.close()
+            return ModelCheckFail(w)
+          }
           ctx.pop()
-          ctx.pop()
-          assert(ctx.stackDepth == 0, s"Expected solver stack to be empty, not: ${ctx.stackDepth}")
-          ctx.close()
-          return ModelCheckFail(w)
-        }
-        ctx.pop()
+        // }
       }
 
       // advance
